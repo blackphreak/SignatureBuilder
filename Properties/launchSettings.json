@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SignatureBuilder": {
+      "commandName": "Project",
+      "commandLineArgs": "\"I:\\Others\\Feather_Newest\\bp_ida\\PacketParser\\Destiny_Server\" \"I:\\Others\\Feather_Newest\\bp_ida\\PacketParser\\Destiny_Server\""
+    }
+  }
+}
