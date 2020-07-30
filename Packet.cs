@@ -10,6 +10,7 @@ namespace SignatureBuilder
     public class Packet : ParserCode
     {
         public static Dictionary<string, Packet> PacketPool = new Dictionary</*hex*/string, Packet>();
+        private static readonly JObject ParamPlaceholderName = new JObject() { { "name", "-" } };
 
         public string Desc;
         public string Header {
@@ -169,9 +170,18 @@ namespace SignatureBuilder
                         }
 
                         if (isInSubcate)
+                        {
                             tmpSubcateSignature += " [REPS]";
+                            tmpSubcateInfo.Add(ParamPlaceholderName);
+                        }
                         else
+                        {
                             tmpSignature += " [REPS]";
+                            if (doesSubcatePlaceholderAppeared)
+                                infoAfterSubcate.Add(ParamPlaceholderName);
+                            else
+                                infoBeforeSubcate.Add(ParamPlaceholderName);
+                        }
 
                         isRepeatableTagEnded = false;
                     }
@@ -193,9 +203,18 @@ namespace SignatureBuilder
                         }
 
                         if (isInSubcate)
+                        {
                             tmpSubcateSignature += " [REPE]";
+                            tmpSubcateInfo.Add(ParamPlaceholderName);
+                        }
                         else
+                        {
                             tmpSignature += " [REPE]";
+                            if (doesSubcatePlaceholderAppeared)
+                                infoAfterSubcate.Add(ParamPlaceholderName);
+                            else
+                                infoBeforeSubcate.Add(ParamPlaceholderName);
+                        }
 
                         isRepeatableTagEnded = true;
                     }

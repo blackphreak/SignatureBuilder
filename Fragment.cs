@@ -10,6 +10,7 @@ namespace SignatureBuilder
     public class Fragment : ParserCode
     {
         public static Dictionary<string, Fragment> FragmentPool = new Dictionary</*name*/string, Fragment>();
+        private static readonly JObject ParamPlaceholderName = new JObject() { { "name", "-" } };
 
         public string Name;
         public string Signature = "";
@@ -55,10 +56,12 @@ namespace SignatureBuilder
                     else if (code.StartsWith("+ REP"))
                     {
                         Signature += " [REPS]";
+                        Infos.Add(ParamPlaceholderName);
                     }
                     else if (code.StartsWith("- REP"))
                     {
                         Signature += " [REPE]";
+                        Infos.Add(ParamPlaceholderName);
                     }
                     else
                     {
