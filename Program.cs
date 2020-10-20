@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Linq;
@@ -8,9 +6,9 @@ using System.Reflection;
 
 namespace SignatureBuilder
 {
-    class Program
+    static class Program
     {
-        public static int currentLine = 0;
+        public static int CurrentLine { get; set; } = 0;
         static LogLevel ExitLevel = LogLevel.WARN | LogLevel.ERR;
 
         static void Main(string[] cmdArgs)
@@ -29,20 +27,21 @@ namespace SignatureBuilder
             }
             string[] lines = System.IO.File.ReadAllLines(file);
 
-            /*
+            /* Example of the built output (JSON):
              {
-                 // layer 1
+                 // layer 1                   - packet header bytes (AKA: delimiter)
                  "6F": {
-                    // layer 2
-                    "name": "Hero Effect",
+                    // layer 2                - packet infos
+                    "name": "Hero Effect", // - packet main name
                     "signature": {
-                        // layer 3
+                        // layer 3            - packet signature (determines all the variants of packet body)
                         "$4 [REPS] $4 $1 $1 [REPE]": {
-                            // layer 4
-                            "desc": "",
-                            "params": [ // array of dicts
+                            // layer 4        - infos of the matched packet signature
+                            "desc": "",       - description of this packet signature
+                            "params": [ //    - infos of each param(data) in the packet signature
                                 { "name": "HeroID" }, // dict<string, dynamic>
-                                { "name": "EffectID", "func": ["eHeroEffect", ] }
+                                { "name": "EffectID", "func": ["eHeroEffect", ] },
+                                // more data ...
                             ]
                         }
                     }
@@ -53,15 +52,19 @@ namespace SignatureBuilder
 
             foreach (string tmp in lines)
             {
-                ++currentLine;
+                ++CurrentLine;
 
                 var line = tmp.Replace("/// ", "").Trim();
                 if (line == "" || line.StartsWith("//"))
+                {
                     continue;
+                }
 
                 // split the actual code, remove comment (//) part.
                 if (line.Contains("//"))
+                {
                     line = line.Split("//")[0].Trim();
+                }
 
                 if (line == "<parser>")
                 {
@@ -126,9 +129,11 @@ namespace SignatureBuilder
 
                     var pkt = new Packet(m[1].Value, m[2].Value.ToUpper());
                     if (!Packet.PacketPool.TryAdd(pkt.Header, pkt))
+                    {
                         Log(LogLevel.ERR | LogLevel.EXIT, $"Duplicated Packet Header[{pkt.Header}]");
+                    }
 
-                    Log(LogLevel.NOR, $"New Packet[{pkt.Header.PadRight(4, ' ')}] Desc[{pkt.Desc}]");
+                    Log(LogLevel.NOR, $"New Packet[{pkt.Header,-4}] Desc[{pkt.Desc}]");
                     obj = pkt;
                 }
                 else
@@ -142,7 +147,7 @@ namespace SignatureBuilder
                     }
 
                     // push to obj's List for further parsing.
-                    obj.AddLine(currentLine, line);
+                    obj.AddLine(CurrentLine, line);
                 }
             }
 
@@ -155,7 +160,7 @@ namespace SignatureBuilder
             Packet.PacketPool.Values.ToList().ForEach(pkt =>
             {
                 pkt.BuildSignature();
-                mainDict.Add(pkt.Header, new JObject() {
+                mainDict.Add(pkt.Header, new JObject {
                     { "desc", pkt.Desc },
                     { "signature", pkt.Signatures }
                 });
@@ -163,7 +168,7 @@ namespace SignatureBuilder
 
             // add version & timestamp
             mainDict.Add("_timestamp", DateTimeOffset.UtcNow.ToUnixTimeSeconds() * 1000);
-            mainDict.Add("_builder", new JArray() { releaseDate.Description.Split(" ")[0], "build " + version, "5" });
+            mainDict.Add("_builder", new JArray { releaseDate.Description.Split(" ")[0], "build " + version, "5" });
 
             System.IO.File.WriteAllText(outFile, JsonConvert.SerializeObject(mainDict));
 
@@ -184,15 +189,21 @@ namespace SignatureBuilder
             Console.ForegroundColor = lv.GetColor();
             string indent = "";
             for (int i = 0; i < indentLv; i++)
+            {
                 indent += "\t";
+            }
 
-            Console.WriteLine($"{indent}[{lv.GetSymbol()}] {msgs[0]} [@Line:{currentLine}]");
+            Console.WriteLine($"{indent}[{lv.GetSymbol()}] {msgs[0]} [@Line:{CurrentLine}]");
 
             for (int i = 1; i < msgs.Length; i++)
+            {
                 Console.WriteLine($"{indent}\t+ {msgs[i]}");
+            }
 
             if (msgs.Length > 1)
+            {
                 Console.WriteLine($"");
+            }
 
             if (lv.HasFlag(LogLevel.EXIT) || lv.HasFlag(ExitLevel))
             {
@@ -234,14 +245,19 @@ namespace SignatureBuilder
         public static ConsoleColor GetColor(this LogLevel lv)
         {
             if (lv.HasFlag(LogLevel.WARN))
+            {
                 return ConsoleColor.Yellow;
+            }
             if (lv.HasFlag(LogLevel.ERR))
+            {
                 return ConsoleColor.Red;
+            }
             if (lv.HasFlag(LogLevel.DEBUG))
+            {
                 return ConsoleColor.Blue;
+            }
 
-            //return ConsoleColor.Green;
-            return ConsoleColor.White;
+            return ConsoleColor.Gray;
         }
     }
 }

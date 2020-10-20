@@ -8,18 +8,18 @@ namespace SignatureBuilder
 {
     public abstract class ParserCode
     {
-        public static Regex regexFrag = new Regex(@"\+?\s?Fragment\[(\S+)\]", RegexOptions.Compiled | RegexOptions.Singleline);
-        public static Regex regexPkt = new Regex(@"Packet\[(.+?)\]:(([0-9A-Fa-f]{2})+)", RegexOptions.Compiled | RegexOptions.Singleline);
+        public static readonly Regex regexFrag = new Regex(@"\+?\s?Fragment\[(\S+)\]", RegexOptions.Compiled | RegexOptions.Singleline);
+        public static readonly Regex regexPkt = new Regex(@"Packet\[(.+?)\]:(([0-9A-Fa-f]{2})+)", RegexOptions.Compiled | RegexOptions.Singleline);
         /// <summary>
         /// [1]: Desc, [3]: Actual Hex-Byte
         /// </summary>
-        public static Regex regexSubcate = new Regex(@"SubCate\[(.+?)\](:([0-9A-Fa-f]{2})+)?", RegexOptions.Compiled | RegexOptions.Singleline);
-        public static Regex regexSign = new Regex(@"(\$[124]|([A-Fa-f0-9]{2})+|64\$4|73\$4\$gbk|\$gbk|param){1}", RegexOptions.Compiled | RegexOptions.Singleline);
+        public static readonly Regex regexSubcate = new Regex(@"SubCate\[(.+?)\](:([0-9A-Fa-f]{2})+)?", RegexOptions.Compiled | RegexOptions.Singleline);
+        public static readonly Regex regexSign = new Regex(@"(\$[124]|([A-Fa-f0-9]{2})+|64\$4|73\$4\$gbk|\$gbk|param){1}", RegexOptions.Compiled | RegexOptions.Singleline);
 
         /// <summary>
         /// original line number : sanitized code from that line
         /// </summary>
-        protected Dictionary</*ori line num*/int, /*line code*/string> Lines = new Dictionary<int, string>();
+        protected readonly Dictionary</*ori line num*/int, /*line code*/string> Lines = new Dictionary<int, string>();
 
         public void AddLine(int lineNum, string code)
         {
@@ -81,7 +81,7 @@ namespace SignatureBuilder
                     // remove "R[" & "]":
                     var arr = new JArray();
                     paramInfo["func"] = arr;
-                    foreach (var str in args[i][2..^1].Split(","))
+                    foreach (var str in (args[i][2..^1]).Split(","))
                         arr.Add(str);
 
                     switch (arr[0].ToString().ToUpper())

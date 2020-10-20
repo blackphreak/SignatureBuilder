@@ -9,12 +9,12 @@ namespace SignatureBuilder
 {
     public class Fragment : ParserCode
     {
-        public static Dictionary<string, Fragment> FragmentPool = new Dictionary</*name*/string, Fragment>();
-        private static readonly JObject ParamPlaceholderName = new JObject() { { "name", "-" } };
+        public static readonly Dictionary<string, Fragment> FragmentPool = new Dictionary</*name*/string, Fragment>();
+        private static readonly JObject ParamPlaceholderName = new JObject { "name", "-" };
 
-        public string Name;
-        public string Signature = "";
-        public List<dynamic> Infos = new List<dynamic>();
+        public string Name { get; private set; }
+        public string Signature { get; private set; } = "";
+        public readonly List<dynamic> Infos = new List<dynamic>();
 
         private bool isSignatureBuilt = false;
 
@@ -26,14 +26,16 @@ namespace SignatureBuilder
         public override void BuildSignature()
         {
             if (isSignatureBuilt)
+            {
                 return;
+            }
 
             Program.Log(LogLevel.NOR, "Building Signature for Fragment[" + Name + "]");
 
             foreach (var (num, code) in this.Lines)
             {
                 var (sign, infos) = ParseSignatureLine(code);
-                Program.currentLine = num;
+                Program.CurrentLine = num;
 
                 if (infos != null)
                 {
@@ -99,7 +101,9 @@ namespace SignatureBuilder
 
             // ask to build signature if not yet built before.
             if (!obj.isSignatureBuilt)
+            {
                 obj.BuildSignature();
+            }
 
             return obj;
         }

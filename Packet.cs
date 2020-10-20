@@ -9,10 +9,10 @@ namespace SignatureBuilder
 {
     public class Packet : ParserCode
     {
-        public static Dictionary<string, Packet> PacketPool = new Dictionary</*hex*/string, Packet>();
-        private static readonly JObject ParamPlaceholderName = new JObject() { { "name", "-" } };
+        public static readonly Dictionary<string, Packet> PacketPool = new Dictionary</*hex*/string, Packet>();
+        private static readonly JObject ParamPlaceholderName = new JObject { "name", "-" };
 
-        public string Desc;
+        public string Desc { get; private set; }
         public string Header {
             get;
             private set;
@@ -53,7 +53,7 @@ namespace SignatureBuilder
             foreach (var (num, code) in Lines)
             {
                 var (sign, infos) = ParseSignatureLine(code);
-                Program.currentLine = num;
+                Program.CurrentLine = num;
 
                 if (infos != null)
                 {
@@ -244,13 +244,19 @@ namespace SignatureBuilder
                     mergedInfos.Add("desc", subcateInfos.Value<string>("desc"));
 
                     foreach (var info in infoBeforeSubcate)
+                    {
                         mergedParams.Add(info);
+                    }
 
                     foreach (var info in subcateInfos.Value<dynamic>("params"))
+                    {
                         mergedParams.Add(info);
+                    }
 
                     foreach (var info in infoAfterSubcate)
+                    {
                         mergedParams.Add(info);
+                    }
 
                     Signatures.Add((tmpSignature.Clone() as string).Replace("{SUBCATE}", sign), mergedInfos);
                 }
@@ -267,110 +273,3 @@ namespace SignatureBuilder
         }
     }
 }
-
-
-/**
-    + SubCate   // subcate body
-    + Fragment[ // fragment in main body
-    pack        // end of all signature
-    EOP         // end of packet -- force pack even without signature
-    // lower part:
-    SubCate[     // subcate declaration
-    + Fragment[  // fragment in subcate
-
-
- else if (line.StartsWith("+ SubCate"))
-{
-    pkt.rawSignatureBeforeParse.Add("{SUBCATE}");
-    pkt.SubCate = new Dictionary<string, dynamic>();
-}
-else if (line.StartsWith("+ Fragment["))
-{
-    var matches = regexFrag.Match(line);
-    if (matches.Groups.Count != 2)
-    {
-        Log(LogLevel.ERR | LogLevel.EXIT,
-            "Malform Fragment tag found.",
-            "Captured: [" + string.Join(", ", matches.Groups.Values) + "]",
-            "Raw: " + line
-        );
-    }
-
-    dynamic frag;
-    if (!fragmentPool.TryGetValue(matches.Groups[1].Value, out frag))
-    {
-        Log(LogLevel.ERR | LogLevel.EXIT,
-            "Fragment referenced before assignment.",
-            "Referenced Fragment Name: " + matches.Groups[1].Value,
-            "Raw: " + line
-        );
-    }
-    pkt.UsedFragment.Add(matches.Groups[1].Value, frag);
-}
-else if (line == "pack")
-{
-    // end of packet content
-    pkt.Pack();
-}
-else if (line.StartsWith("SubCate["))
-{
-    // subcate declaration
-    var captured = regexSubcate.Match(line).Groups;
-    if (captured.Count != 4 && captured.Count != 2)
-    {
-        Log(LogLevel.ERR | LogLevel.EXIT,
-            "Invalid SubCate Declaration found.",
-            $"Expected Groups Count: 2 / 4, Actual: {captured.Count}",
-            "Capture Groups: {" + string.Join(", ", captured.Values.SelectMany(x => x.Value)) + "}",
-            "Raw: " + line
-        );
-    }
-
-    var _byte = captured[4]?.Value ?? null;
-    if (currentSubcate[0] == captured[1].Value)
-    {
-        Log(LogLevel.ERR | LogLevel.EXIT,
-            "Duplicated SubCate Description within the same Packet.",
-            $"Previous: \"{string.Join("\" : ", currentSubcate)}",
-            $"Current: \"{captured[1].Value}\" : {_byte ?? "-N/A-"}"
-        );
-    }
-    else if (captured[4] != null && currentSubcate[1] == captured[4].Value)
-    {
-        Log(LogLevel.ERR | LogLevel.EXIT,
-            "Duplicated SubCate Byte within the same Packet.",
-            $"Previous: {string.Join(" : \"", currentSubcate)}\"",
-            $"Current: {captured[1].Value} : \"{_byte ?? "-N/A-"}\""
-        );
-    }
-
-    if (!Regex.IsMatch(_byte, @"\A\b[0-9a-fA-F]+\b\Z"))
-    {
-        Log(LogLevel.ERR | LogLevel.EXIT,
-            "Non-hex value provided as signature byte for SubCate",
-            $"Provided: {_byte}"
-        );
-    }
-
-    currentSubcate = new string[] { captured[1].Value, _byte };
-
-    dynamic info = new JObject();
-info.desc = captured[1].Value;
-    info["params"] = new JArray();
-
-    if (captured.Count == 4)
-    {
-        // fixed byte
-        info._tmpSign = _byte; // TODO: remove it before json output
-    }
-    // else: with desc only
-    // ~ do nothing
-
-    if (!pkt.SubCate.TryAdd(*//*desc*//*captured[1].Value, info))
-    {
-        Log(LogLevel.ERR | LogLevel.EXIT,
-            $"Failed to add SubCate with description[{captured[1].Value}]"
-        );
-    }
-}
-*/
